@@ -4,15 +4,15 @@ plugins {
 }
 
 android {
-    namespace = "com.example.shrinkwraptest"
+    namespace = "com.example.shrinkwrap"
     compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.shrinkwraptest"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 3
+        versionName = "0.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -44,5 +44,5 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation(project(":ShrinkwrapTextView"))
+    implementation(project(":ShrinkWrapTextView"))
 }

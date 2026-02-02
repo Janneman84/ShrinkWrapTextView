@@ -1,4 +1,4 @@
-package com.example.shrinkwraptest
+package com.example.shrinkwrap
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge

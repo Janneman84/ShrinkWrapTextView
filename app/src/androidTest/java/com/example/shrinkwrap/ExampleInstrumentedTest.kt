@@ -1,4 +1,4 @@
-package com.example.shrinkwraptest
+package com.example.shrinkwrap
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

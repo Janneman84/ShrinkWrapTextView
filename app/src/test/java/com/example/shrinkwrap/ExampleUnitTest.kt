@@ -1,4 +1,4 @@
-package com.example.shrinkwraptest
+package com.example.shrinkwrap
 
 import org.junit.Test
 

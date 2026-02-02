@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Shrinkwrap test"
+rootProject.name = "ShrinkWrap test app"
 include(":app")
-include(":ShrinkwrapTextView")
+include(":ShrinkWrapTextView")
