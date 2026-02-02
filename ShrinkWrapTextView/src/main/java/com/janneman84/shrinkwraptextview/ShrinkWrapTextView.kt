@@ -21,11 +21,13 @@ import kotlin.math.ceil
  *  Alternatively, instead of using this class you can also use the `measureShrinkWrappedWidth()` function (see its doc for more info).
  */
 
-open class ShrinkWrapTextView(context: Context, attrs: AttributeSet?) : AppCompatTextView(context, attrs) {
+open class ShrinkWrapTextView : AppCompatTextView {
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) { checkShrinkWrapAttribute(attrs) }
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) { checkShrinkWrapAttribute(attrs) }
 
     /** Set to false to disable shrink wrapping. */
     var shrinkWrap = true
-    init { shrinkWrap = checkShrinkWrapAttribute(attrs) }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // This gives you access to lineCount, layout.getLineMax() and measuredHeight.
@@ -43,11 +45,13 @@ open class ShrinkWrapTextView(context: Context, attrs: AttributeSet?) : AppCompa
  * Button version of `ShrinkWrapTextView`, check its documentation for information.
  */
 // Button is a subclass of TextView, so the code of this class is exactly the same as ShrinkWrapTextView.
-open class ShrinkWrapButton(context: Context, attrs: AttributeSet?) : AppCompatButton(context, attrs) {
+open class ShrinkWrapButton : AppCompatButton {
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) { checkShrinkWrapAttribute(attrs) }
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) { checkShrinkWrapAttribute(attrs) }
 
     /** Set to false to disable shrink wrapping. */
     var shrinkWrap = true
-    init { shrinkWrap = checkShrinkWrapAttribute(attrs) }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // This gives you access to lineCount, layout.getLineMax() and measuredHeight.
