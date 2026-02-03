@@ -1,4 +1,4 @@
-<img id="badge" src="https://jitpack.io/v/Janneman84/ShrinkWrapTextView.svg">
+<img id="badge" src="https://jitpack.io/v/Janneman84/ShrinkWrapTextView.svg"> <img height="1" img width="1" alt="shrinkwrap" src="https://github.com/user-attachments/assets/10178d16-cfbf-465a-a08a-9cbd39a636c3"/>
 
 # ShrinkWrapTextView
 Fixes oversized TextViews (and Buttons) in Android apps:
