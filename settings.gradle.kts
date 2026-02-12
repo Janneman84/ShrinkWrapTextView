@@ -22,4 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "ShrinkWrap test app"
 include(":app")
 include(":ShrinkWrapTextView")
-include(":shrinkwraptext")
+include(":ShrinkWrapText")
