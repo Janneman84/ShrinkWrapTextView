@@ -1,4 +1,4 @@
-<img id="badge" src="https://jitpack.io/v/Janneman84/ShrinkWrapTextView.svg"> [![XML Compose](https://img.shields.io/badge/XML-Compose-brightgreen)](#)
+<img id="badge" src="https://jitpack.io/v/Janneman84/ShrinkWrapText.svg"> [![XML Compose](https://img.shields.io/badge/XML-Compose-brightgreen)](#)
 [![Android](https://img.shields.io/badge/Android-3DDC84?logo=android&logoColor=white)](#)
 [![KMP](https://img.shields.io/badge/Kotlin-Multiplatform-%237f52ff?logo=kotlin)](#)<img height="1" img width="1" alt="shrinkwrap" src="https://github.com/user-attachments/assets/10178d16-cfbf-465a-a08a-9cbd39a636c3"/>
 
@@ -40,12 +40,13 @@ dependencyResolutionManagement {
   <summary><b>Add dependencies (Android)</b></summary>
 <br>
 
-Add one or both of below's implementations to your apps' `build.gradle`:
+Add one or more of below's implementations to your apps' `build.gradle`:
 
 ```kotlin
 dependencies {
-	implementation("com.github.Janneman84.ShrinkWrapText:XML:0.4.1") // XML
-	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.4.1") // Compose
+	implementation("com.github.Janneman84.ShrinkWrapText:XML:0.5.0") // XML
+	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.5.0") // Compose
+	implementation("com.github.Janneman84.ShrinkWrapText:Layout:0.5.0") // Static/DynamicLayout
 }
 ```
 </details>
@@ -58,20 +59,20 @@ With shared UI, use commonMain in `build.gradle` to target all platforms:
 
 ```kotlin
 commonMain.dependencies {
-	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.4.1")
+	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.5.0")
 }
 ```
 Or use specific targets:
 ```
-com.github.Janneman84.ShrinkWrapText:Compose-wasm-js:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-macosarm64:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-iosx64:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-macosx64:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-android:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-jvm:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-js:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-iossimulatorarm64:0.4.1
-com.github.Janneman84.ShrinkWrapText:Compose-iosarm64:0.4.1
+com.github.Janneman84.ShrinkWrapText:Compose-wasm-js:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-macosarm64:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-iosx64:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-macosx64:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-android:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-jvm:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-js:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-iossimulatorarm64:0.5.0
+com.github.Janneman84.ShrinkWrapText:Compose-iosarm64:0.5.0
 ```
 </details>
 
@@ -143,7 +144,7 @@ protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 ```
 ### Known issue
 In some cases, using `ConstraintLayout` together with `app:layout_constrainedWidth="true"` and `android:layout_width="wrap_content"` may cause undesired results.
-This can be fixed easily with a few changes. Make it so `app:layout_constrainedWidth="true"` is set to a layout view and has its width set to `match_parent`. Then put the `ShrinkWrapTextView` as its subview.
+This can be fixed easily with a few changes. Make it so `app:layout_constrainedWidth="true"` is set to a layout view and has its width set to `match_parent`. Then put the `ShrinkWrapTextView` as its child.
 I put an example below. If you still have problems submit an issue so I can help.
 ```xml
 <!--Example of fix when inside a ConstrainedLayout-->
@@ -203,6 +204,70 @@ Make sure to put `layout(measureText)` at the end of the modifier chain, or else
 
 You can optionally turn shrink-wrapping on/off with the first argument, like `ShrinkWrap(false) {...}`.
 
+# 
+</details>
+
+<details>
+  <summary><b>How to use (Static/DynamicLayout)</b></summary>
+<br>
+	
+You can use `StaticLayout` or `DynamicLayout` to directly draw multi-line text to a View's canvas inside `onDraw()`. This is how Telegram Messenger creates its entire UI.
+
+To shrink-wrap these you can use one of two options:
+
+### Option 1
+This option works only with `StaticLayout` and requires API level 23.
+
+Replace `StaticLayout.Builder.obtain()` with `ShrinkWrap.buildStaticLayout()`:
+
+```kotlin
+import import shrinkwrap.layout.*
+```
+
+```kotlin
+// Kotlin
+ShrinkWrap.buildStaticLayout(myText, 0, text.length, myPaint, 500, true) {
+	it.setAlignment(Layout.Alignment.ALIGN_CENTER) // chain settings here
+}
+
+// Java
+ShrinkWrap.buildStaticLayout(myText, 0, myText.length(), myPaint, 500, true, b -> b
+    .setAlignment(Layout.Alignment.ALIGN_CENTER) // chain settings here
+);
+```
+Make sure you DON'T call `.build()` inside the builder callback, this will be done for you.
+
+### Option 2
+This option is a bit faster, works with both `StaticLayout` and `DynamicLayout` and works on all versions of Android. However, shrink-wrapping won't work if the text has mixed alignments. In that case it will just return its full size.
+
+Unlike option 1 you create your layout like normal. Then, before you draw you call `ShrinkWrap.getLayoutRect()` to get the rect that tightly fits around the text, which you can use to measure and translate the drawing accordingly.
+
+```kotlin
+import import shrinkwrap.compose.*
+```
+
+```kotlin
+public override fun onDraw(canvas: Canvas) {
+    super.onDraw(canvas)
+
+	/* create myLayout somewhere */
+
+    val swRect = ShrinkWrap.getLayoutRect(myLayout, true)
+
+    // draw background behind text
+    val background = Paint()
+    background.color = "#ffd9ff04".toColorInt()
+    canvas.drawRect(Rect(0, 0, (swRect.right-swRect.left).toInt(), myLayout.height), background)
+
+    // draw text on canvas with shrink-wrap adjusted offset, move to the left as much as possible
+    canvas.withTranslation(0 - swRect.left, 0f) {
+        myLayout.draw(this)
+    }
+}
+```
+
+You can see this in action in the demo app of this repo in `MyLayoutViews.kt`.
+	
 </details>
 
 ## License
