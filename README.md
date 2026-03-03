@@ -55,7 +55,7 @@ dependencies {
   <summary><b>Add dependencies (Kotlin Multiplatform)</b></summary>
 <br>
 
-With shared UI, use `build.gradle` in `commonMain` to target all platforms:
+With shared UI, in `build.gradle` add dependency to `commonMain.dependencies` to target all platforms:
 
 ```kotlin
 commonMain.dependencies {
