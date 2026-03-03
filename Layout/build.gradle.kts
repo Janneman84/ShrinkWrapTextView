@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "shrinkwrap.xml"
+    namespace = "shrinkwrap.layout"
     compileSdk {
         version = release(36)
     }
@@ -34,8 +34,6 @@ android {
 
 dependencies {
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
 }
 
 afterEvaluate {
@@ -44,7 +42,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 from(components["release"])
                 groupId = "Janneman84"
-                artifactId = "XML"
+                artifactId = "Layout"
                 version = "0.5.0"
             }
         }

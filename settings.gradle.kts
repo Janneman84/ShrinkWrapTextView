@@ -23,3 +23,4 @@ rootProject.name = "ShrinkWrap test app"
 include(":app")
 include(":XML")
 include(":Compose")
+include(":Layout")

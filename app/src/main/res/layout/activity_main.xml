@@ -93,4 +93,17 @@
         android:drawablePadding="8dp"
         />
 
+    <com.example.shrinkwrap.MyStaticLayoutView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:background="@color/material_dynamic_primary80"
+        />
+
+    <com.example.shrinkwrap.MyDynamicLayoutView
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@color/material_dynamic_primary80"
+        />
+
 </LinearLayout>

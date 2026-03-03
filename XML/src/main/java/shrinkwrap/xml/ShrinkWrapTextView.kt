@@ -192,7 +192,7 @@ private fun TextView.actuallyMeasureShrinkWrappedWidth(): Int {
         return measuredWidth
     }
 
-    // Replace full text width with shrink wrapped text width.
+    // Replace full text width with shrink-wrapped text width.
     val shrinkWrappedWidth = measuredWidth - layout.width + ceil((0 until layout.lineCount).maxOfOrNull { layout.getLineMax(it) } ?: 0.0f).toInt()
 
     if (shrinkWrappedWidth >= measuredWidth) {
