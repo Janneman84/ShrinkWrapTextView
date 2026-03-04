@@ -142,6 +142,10 @@ protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 	);
 }
 ```
+### Tip
+Try adding `android:breakStrategy="balanced"` for more compact and natural flowing text.
+You may also like to play with similar settings like `android:lineBreakStyle` and `android:lineBreakWordStyle`.
+
 ### Known issue
 In some cases, using `ConstraintLayout` together with `app:layout_constrainedWidth="true"` and `android:layout_width="wrap_content"` may cause undesired results.
 This can be fixed easily with a few changes. Make it so `app:layout_constrainedWidth="true"` is set to a layout view and has its width set to `match_parent`. Then put the `ShrinkWrapTextView` as its child.
@@ -203,6 +207,18 @@ ShrinkWrap { measureText, onTextLayout ->
 Make sure to put `layout(measureText)` at the end of the modifier chain, or else you may get unexpected results.
 
 You can optionally turn shrink-wrapping on/off with the first argument, like `ShrinkWrap(false) {...}`.
+
+### Tip
+You can play around with line breaking strategies for more natural flowing text. For example:
+```Kotlin
+    Text(
+        ...
+		style = LocalTextStyle.current.copy(lineBreak =
+			LineBreak.Paragraph.copy(strategy = LineBreak.Strategy.Balanced)
+		)
+    )
+```
+For more info read here: https://developer.android.com/develop/ui/compose/text/style-paragraph#insert-line
 
 # 
 </details>
@@ -267,6 +283,10 @@ public override fun onDraw(canvas: Canvas) {
 ```
 
 You can see this in action in the demo app of this repo in `MyLayoutViews.kt`.
+
+### Tip
+Try adding `.setBreakStrategy(LineBreaker.BREAK_STRATEGY_BALANCED)` to the layout builder for more compact and natural flowing text.
+Try playing with `.setLineBreakConfig()` as well.
 	
 </details>
 
