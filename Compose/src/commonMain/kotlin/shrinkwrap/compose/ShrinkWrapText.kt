@@ -107,7 +107,7 @@ private fun getOnTextLayout(s: SWSettings, onTextLayout: ((TextLayoutResult) -> 
                 else {
                     val lineStartOffset = it.getLineStart(i)
 
-                    // Zoek de ParagraphStyle die op dit punt actief is
+                    // Search the ParagraphStyle that is active at this point
                     val paragraphStyle = it.layoutInput.text.paragraphStyles.find {
                         lineStartOffset >= it.start && lineStartOffset < it.end
                     }?.item
@@ -142,7 +142,7 @@ private fun getOnTextLayout(s: SWSettings, onTextLayout: ((TextLayoutResult) -> 
             }
 
             if (hasUnspecified) {
-                s.maxLineWidth = null // will place text as is
+                s.maxLineWidth = null // Will place text as is
             }
             else if ((hasLeft xor hasRight) && hasCenter) {
                 s.maxLineWidth = max(s.maxLineWidth!!, ((s.constraints!!.maxWidth - maxCenterWidth) * 0.5f) + maxCenterWidth)

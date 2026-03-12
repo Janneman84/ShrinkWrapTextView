@@ -4,7 +4,6 @@ import android.content.Context
 import android.text.Layout
 import android.util.AttributeSet
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatTextView
@@ -13,6 +12,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
 import kotlin.math.ceil
 import kotlin.math.max
+import kotlin.math.min
 
 /**
  * This subclass fixes a sizing issue from the regular `TextView`.
@@ -37,8 +37,8 @@ open class ShrinkWrapTextView : AppCompatTextView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // This gives you access to lineCount, layout.getLineMax() and measuredHeight.
         if (!shrinkWrap || isGone) { return }
 
-        val width = actuallyMeasureShrinkWrappedWidth()
-        if (width < measuredWidth) {
+        val width = actuallyMeasureShrinkWrappedWidth(widthMeasureSpec)
+        if (width != measuredWidth) {
             setMeasuredDimension(width, measuredHeight)
         }
     }
@@ -67,8 +67,8 @@ open class ShrinkWrapMaterialTextView : MaterialTextView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // This gives you access to lineCount, layout.getLineMax() and measuredHeight.
         if (!shrinkWrap || isGone) { return }
 
-        val width = actuallyMeasureShrinkWrappedWidth()
-        if (width < measuredWidth) {
+        val width = actuallyMeasureShrinkWrappedWidth(widthMeasureSpec)
+        if (width != measuredWidth) {
             setMeasuredDimension(width, measuredHeight)
         }
     }
@@ -90,8 +90,8 @@ open class ShrinkWrapButton : AppCompatButton {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // This gives you access to lineCount, layout.getLineMax() and measuredHeight.
         if (!shrinkWrap || isGone) { return }
 
-        val width = actuallyMeasureShrinkWrappedWidth()
-        if (width < measuredWidth) {
+        val width = actuallyMeasureShrinkWrappedWidth(widthMeasureSpec)
+        if (width != measuredWidth) {
             setMeasuredDimension(width, measuredHeight)
         }
     }
@@ -113,8 +113,8 @@ open class ShrinkWrapMaterialButton : MaterialButton {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // This gives you access to lineCount, layout.getLineMax() and measuredHeight.
         if (!shrinkWrap || isGone) { return }
 
-        val width = actuallyMeasureShrinkWrappedWidth()
-        if (width < measuredWidth) {
+        val width = actuallyMeasureShrinkWrappedWidth(widthMeasureSpec)
+        if (width != measuredWidth) {
             setMeasuredDimension(width, measuredHeight)
         }
     }
@@ -128,7 +128,7 @@ open class ShrinkWrapMaterialButton : MaterialButton {
  *
  *     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
  *         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // Call super first!
- *         setMeasuredDimension(measureShrinkWrappedWidth(), measuredHeight)
+ *         setMeasuredDimension(measureShrinkWrappedWidth(widthMeasureSpec), measuredHeight)
  *     }
  *
  * Java:
@@ -136,11 +136,11 @@ open class ShrinkWrapMaterialButton : MaterialButton {
  *     @Override
  *     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
  *         super.onMeasure(widthMeasureSpec, heightMeasureSpec); // Call super first!
- *         setMeasuredDimension(ShrinkWrapTextViewKt.measureShrinkWrappedWidth(this), getMeasuredHeight());
+ *         setMeasuredDimension(ShrinkWrapTextViewKt.measureShrinkWrappedWidth(this, widthMeasureSpec, true), getMeasuredHeight());
  *     }
  *
  * */
-fun TextView.measureShrinkWrappedWidth(): Int {
+fun TextView.measureShrinkWrappedWidth(widthMeasureSpec: Int, shrinkWrap: Boolean = true): Int {
 
     assert(this !is ShrinkWrapTextView, {
         "This function should not be called from an instance of ShrinkWrapTextView (or subclass)."
@@ -149,7 +149,7 @@ fun TextView.measureShrinkWrappedWidth(): Int {
         "No layout, make sure to only call this function inside onMeasure() and super.onMeasure() is called before this."
     })
 
-    return actuallyMeasureShrinkWrappedWidth()
+    return if (shrinkWrap) actuallyMeasureShrinkWrappedWidth(widthMeasureSpec) else measuredWidth
 }
 
 private fun TextView.checkShrinkWrapAttribute(attrs: AttributeSet?): Boolean {
@@ -166,31 +166,12 @@ private fun TextView.checkShrinkWrapAttribute(attrs: AttributeSet?): Boolean {
     }
 }
 
-private fun TextView.actuallyMeasureShrinkWrappedWidth(): Int {
+private fun TextView.actuallyMeasureShrinkWrappedWidth(widthMeasureSpec: Int): Int {
 
     val lineCount = layout.lineCount
 
     // No magic needed if there is only 1 line.
-    if (lineCount <= 1 || isGone) {
-        return measuredWidth
-    }
-
-    // Make sure this view or any of its parents use wrap_content.
-    var wrapContentFound = false
-    var parentView: View? = this
-
-    while (parentView != null) {
-        if (parentView.layoutParams.width == ViewGroup.LayoutParams.WRAP_CONTENT) {
-            wrapContentFound = true
-            break
-        }
-        parentView = parentView.parent as? View
-        if (parentView == rootView) {
-            break
-        }
-    }
-
-    if (!wrapContentFound) {
+    if (lineCount <= 1 || isGone || View.MeasureSpec.getMode(widthMeasureSpec) != View.MeasureSpec.AT_MOST) {
         return measuredWidth
     }
 
@@ -252,26 +233,29 @@ private fun TextView.actuallyMeasureShrinkWrappedWidth(): Int {
         }
     }
 
-    val maxLayoutWidth = layoutWidthF // (if (maxWidth >=0 && maxWidth < Integer.MAX_VALUE) maxWidth.toFloat() else maxEms*textSize) - (measuredWidth - layout.width)
+    val maxLayoutWidth = { min(
+        View.MeasureSpec.getSize(widthMeasureSpec).toFloat(),
+        (if (maxWidth >=0) maxWidth.toFloat() else maxEms*textSize)
+    ) - (measuredWidth - layout.width) }
 
     if (hasUnspecified) {
         maxLineWidth = layoutWidthF // will place text as is
     }
     else if ((hasLeft xor hasRight) && hasCenter) {
-        maxLineWidth = max(maxLineWidth, ((maxLayoutWidth - maxCenterWidth) * 0.5f) + maxCenterWidth)
+        maxLineWidth = max(maxLineWidth, ((maxLayoutWidth() - maxCenterWidth) * 0.5f) + maxCenterWidth)
     }
     else if (hasLeft && hasRight) {
         if (measuredWidth == maxWidth) {
             maxLineWidth = layoutWidthF
         } else {
-            maxLineWidth = maxLayoutWidth
+            maxLineWidth = maxLayoutWidth()
         }
     }
 
     // Replace full text width with shrink-wrapped text width.
     val shrinkWrappedWidth = measuredWidth - layout.width + ceil(maxLineWidth).toInt()
 
-    if (shrinkWrappedWidth >= measuredWidth) {
+    if (shrinkWrappedWidth == measuredWidth) {
         return measuredWidth
     }
 

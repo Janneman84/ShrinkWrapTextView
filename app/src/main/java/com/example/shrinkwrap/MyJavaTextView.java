@@ -17,6 +17,9 @@ public class MyJavaTextView extends AppCompatTextView {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec); // Call super first!
-        setMeasuredDimension(ShrinkWrapTextViewKt.measureShrinkWrappedWidth(this), getMeasuredHeight());
+        setMeasuredDimension(
+            ShrinkWrapTextViewKt.measureShrinkWrappedWidth(this, widthMeasureSpec, true),
+            getMeasuredHeight()
+        );
     }
 }

@@ -15,7 +15,7 @@ class MyKotlinTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // Call super first!
-        setMeasuredDimension(measureShrinkWrappedWidth(), measuredHeight)
+        setMeasuredDimension(measureShrinkWrappedWidth(widthMeasureSpec), measuredHeight)
     }
 
 }
@@ -28,7 +28,7 @@ class MyKotlinButton(context: Context, attrs: AttributeSet?) : AppCompatButton(c
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec) // Call super first!
-        setMeasuredDimension(measureShrinkWrappedWidth(), measuredHeight)
+        setMeasuredDimension(measureShrinkWrappedWidth(widthMeasureSpec), measuredHeight)
     }
 
 }
