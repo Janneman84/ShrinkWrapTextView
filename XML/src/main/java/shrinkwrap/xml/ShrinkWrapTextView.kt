@@ -180,7 +180,6 @@ private fun TextView.actuallyMeasureShrinkWrappedWidth(widthMeasureSpec: Int): I
     var hasLeft = false
     var hasRight = false
     var hasCenter = false
-    var hasUnspecified = false
     var maxLineWidth: Float = (minimumWidth - (measuredWidth - layout.width)).toFloat()
 
     for (i in 0 until layout.lineCount) {
@@ -196,7 +195,7 @@ private fun TextView.actuallyMeasureShrinkWrappedWidth(widthMeasureSpec: Int): I
 
         // Check for situations that don't have a clear alignment.
         if (left < 0f || right > layoutWidthF) {
-            hasUnspecified = true
+            return measuredWidth
         }
         else {
 
@@ -212,20 +211,18 @@ private fun TextView.actuallyMeasureShrinkWrappedWidth(widthMeasureSpec: Int): I
                         hasCenter = true
                         maxCenterWidth = max(maxCenterWidth, lineWidth)
                     }
-
                     Layout.Alignment.ALIGN_NORMAL -> {
                         when (textDirection) {
                             1 -> hasLeft = true
                             -1 -> hasRight = true
-                            else -> hasUnspecified = true
+                            else -> return measuredWidth
                         }
                     }
-
                     Layout.Alignment.ALIGN_OPPOSITE -> {
                         when (textDirection) {
                             -1 -> hasLeft = true
                             1 -> hasRight = true
-                            else -> hasUnspecified = true
+                            else -> return measuredWidth
                         }
                     }
                 }
@@ -238,18 +235,11 @@ private fun TextView.actuallyMeasureShrinkWrappedWidth(widthMeasureSpec: Int): I
         (if (maxWidth >=0) maxWidth.toFloat() else maxEms*textSize)
     ) - (measuredWidth - layout.width) }
 
-    if (hasUnspecified) {
-        maxLineWidth = layoutWidthF // will place text as is
-    }
-    else if ((hasLeft xor hasRight) && hasCenter) {
+    if ((hasLeft xor hasRight) && hasCenter) {
         maxLineWidth = max(maxLineWidth, ((maxLayoutWidth() - maxCenterWidth) * 0.5f) + maxCenterWidth)
     }
     else if (hasLeft && hasRight) {
-        if (measuredWidth == maxWidth) {
-            maxLineWidth = layoutWidthF
-        } else {
-            maxLineWidth = maxLayoutWidth()
-        }
+        maxLineWidth = maxLayoutWidth()
     }
 
     // Replace full text width with shrink-wrapped text width.

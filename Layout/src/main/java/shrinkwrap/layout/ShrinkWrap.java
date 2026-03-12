@@ -21,7 +21,7 @@ public class ShrinkWrap {
      * <pre>
      * {@code
      *         // Java
-     *         ShrinkWrap.buildStaticLayout(myText, 0, myText.length(), myPaint, 500, true, b -> b
+     *         ShrinkWrap.buildStaticLayout(myText, 0, myText.length(), myPaint, 0, 500, true, b -> b
      *             .setAlignment(Layout.Alignment.ALIGN_CENTER)
      *         );
      * }
@@ -29,7 +29,7 @@ public class ShrinkWrap {
      * <pre>
      * {@code
      *         // Kotlin
-     *         ShrinkWrap.buildStaticLayout(myText, 0, text.length, myPaint, 500, true) {
+     *         ShrinkWrap.buildStaticLayout(myText, 0, text.length, myPaint, 0, 500, true) {
      *             it.setAlignment(Layout.Alignment.ALIGN_CENTER)
      *         }
      * }
@@ -40,7 +40,8 @@ public class ShrinkWrap {
      * @param start         The index of the start of the text
      * @param end           The index + 1 of the end of the text
      * @param paint         The base paint used for layout
-     * @param width         The width in pixels
+     * @param minWidth      The minimum width in pixels
+     * @param maxWidth      The maximum width in pixels
      * @param shrinkWrap    Enable/disable shrink-wrapping here
      * @param builderConfig Callback to configure the builder
      * @return StaticLayout object with adjusted size, ready to draw on canvas.
@@ -52,11 +53,12 @@ public class ShrinkWrap {
             int start,
             int end,
             TextPaint paint,
-            int width,
+            int minWidth,
+            int maxWidth,
             boolean shrinkWrap,
             Consumer<StaticLayout.Builder> builderConfig
     ) {
-        StaticLayout.Builder builder = StaticLayout.Builder.obtain(source, start, end, paint, width);
+        StaticLayout.Builder builder = StaticLayout.Builder.obtain(source, start, end, paint, maxWidth);
 
         if (builderConfig != null) {
             builderConfig.accept(builder);
@@ -69,7 +71,7 @@ public class ShrinkWrap {
             throw new AssertionError("Don't call .build() in the builderConfig callback of the ShrinkWrap.buildStaticLayout() method.");
         }
 
-        if (!shrinkWrap) {
+        if (!shrinkWrap || minWidth >= maxWidth) {
             return sl;
         }
 
@@ -78,7 +80,6 @@ public class ShrinkWrap {
         boolean hasLeft = false;
         boolean hasRight = false;
         boolean hasCenter = false;
-        boolean hasUnspecified = false;
 
         float maxLineWidth = 0;
         for (int i = 0; i < sl.getLineCount(); i++) {
@@ -95,7 +96,7 @@ public class ShrinkWrap {
 
             // Check for situations that don't have a clear alignment.
             if (left < 0f || right > layoutWidthF) {
-                hasUnspecified = true;
+                return sl;
             }
             else {
                 int ls = sl.getLineStart(i);
@@ -120,11 +121,9 @@ public class ShrinkWrap {
                                     hasRight = true;
                                     break;
                                 default:
-                                    hasUnspecified = true;
-                                    break;
+                                    return sl;
                             }
                             break;
-
                         case ALIGN_OPPOSITE:
                             switch (textDirection) {
                                 case -1:
@@ -134,8 +133,7 @@ public class ShrinkWrap {
                                     hasRight = true;
                                     break;
                                 default:
-                                    hasUnspecified = true;
-                                    break;
+                                    return sl;
                             }
                             break;
                     }
@@ -143,23 +141,20 @@ public class ShrinkWrap {
             }
         }
 
-        float maxLayoutWidth = width; // layoutWidthF // (if (maxWidth >=0 && maxWidth < Integer.MAX_VALUE) maxWidth.toFloat() else maxEms*textSize) - (measuredWidth - layout.width)
-
-        if (hasUnspecified) {
-            return sl; // will place text as is
-        }
-        else if ((hasLeft ^ hasRight) && hasCenter) {
-            maxLineWidth = max(maxLineWidth, ((maxLayoutWidth - maxCenterWidth) * 0.5f) + maxCenterWidth);
+        if ((hasLeft ^ hasRight) && hasCenter) {
+            maxLineWidth = max(maxLineWidth, ((maxWidth - maxCenterWidth) * 0.5f) + maxCenterWidth);
         }
         else if (hasLeft && hasRight) {
-            maxLineWidth = maxLayoutWidth;
+            maxLineWidth = maxWidth;
         }
 
-        if (maxLineWidth == width) {
+        int maxLineWidthInt = (int) Math.ceil(maxLineWidth);
+
+        if (maxLineWidthInt == maxWidth) {
             return sl;
         }
 
-        StaticLayout.Builder builder2 = StaticLayout.Builder.obtain(source, start, end, paint, (int) Math.ceil(maxLineWidth));
+        StaticLayout.Builder builder2 = StaticLayout.Builder.obtain(source, start, end, paint, Math.max(minWidth, maxLineWidthInt));
 
         if (builderConfig != null) {
             builderConfig.accept(builder2);
@@ -173,38 +168,87 @@ public class ShrinkWrap {
      * Shrink-wrapping will not work if shrinkWrap is false or if the text has mixed alignments. In that case te full size of the layout will be returned.
      *
      * @param layout     supply StaticLayout or DynamicLayout object
+     * @param minWidth   The minimum width in pixels
      * @param shrinkWrap enable/disable shrink-wrapping
      * @return Rect you may use to measure and adjust positioning of the text when drawing.
      *
      */
-    public static RectF getLayoutRect(Layout layout, Boolean shrinkWrap) {
+    public static RectF getLayoutRect(Layout layout, float minWidth, Boolean shrinkWrap) {
 
-        if (!shrinkWrap) {
+        if (!shrinkWrap || minWidth >= layout.getWidth()) {
             return new RectF(0, 0, layout.getWidth(), layout.getHeight());
         }
 
         float minLeft = 1000000.0f;
         float maxRight = -1000000.0f;
-        boolean hasCenteredLine = false;
+
+        boolean hasLeft = false;
+        boolean hasRight = false;
+        boolean hasCenter = false;
+        boolean hasUnspecified = false;
 
         for (int i = 0; i < layout.getLineCount(); i++) {
-
-            float left = layout.getLineLeft(i);
-            float right = layout.getLineRight(i);
 
             int ls = layout.getLineStart(i);
             // If line is wrapped it will have same alignment as previous line, so ignore
             if (i == 0 || ls <= 0 || layout.getText().charAt(ls - 1) == '\n') {
-                boolean lineIsCentered = layout.getParagraphAlignment(i) == Layout.Alignment.ALIGN_CENTER;
-                if (i > 0 && hasCenteredLine != lineIsCentered) {
+
+                Layout.Alignment alignment = layout.getParagraphAlignment(i);
+                int textDirection = layout.getParagraphDirection(i);
+
+                switch (alignment) {
+                    case ALIGN_CENTER: {
+                        hasCenter = true;
+                        break;
+                    }
+                    case ALIGN_NORMAL:
+                        switch (textDirection) {
+                            case 1:
+                                hasLeft = true;
+                                break;
+                            case -1:
+                                hasRight = true;
+                                break;
+                            default:
+                                hasUnspecified = true;
+                                break;
+                        }
+                        break;
+                    case ALIGN_OPPOSITE:
+                        switch (textDirection) {
+                            case -1:
+                                hasLeft = true;
+                                break;
+                            case 1:
+                                hasRight = true;
+                                break;
+                            default:
+                                hasUnspecified = true;
+                                break;
+                        }
+                        break;
+                }
+
+                if (hasUnspecified || (hasLeft && hasRight) || (hasLeft && hasCenter) || (hasCenter && hasRight)) {
                     return new RectF(0, 0, layout.getWidth(), layout.getHeight());
                 }
-                hasCenteredLine = lineIsCentered;
             }
-
-            minLeft = Math.min(minLeft, left);
-            maxRight = Math.max(maxRight, right);
+            minLeft = Math.min(minLeft, layout.getLineLeft(i));
+            maxRight = Math.max(maxRight, layout.getLineRight(i));
         }
+
+        float extraWidth = Math.max(0, minWidth - (maxRight - minLeft));
+        if (extraWidth > 0) {
+            if (hasLeft) {
+                maxRight = Math.min(maxRight + extraWidth, layout.getWidth());
+            } else if (hasRight) {
+                minLeft = Math.max(minLeft - extraWidth, 0);
+            } else if (hasCenter) {
+                minLeft = Math.max(minLeft - (extraWidth * 0.5f), 0);
+                maxRight = Math.min(maxRight + (extraWidth * 0.5f), layout.getWidth());
+            }
+        }
+
         return new RectF(minLeft, 0, maxRight, layout.getHeight());
     }
 }

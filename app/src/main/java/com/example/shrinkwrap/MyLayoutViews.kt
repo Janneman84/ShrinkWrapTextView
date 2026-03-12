@@ -26,7 +26,7 @@ class MyStaticLayoutView(context: Context, attrs: AttributeSet?) : View(context,
         textPaint.textSize = 16 * resources.displayMetrics.density;
 
         val text = "This is a ShrinkWrapped StaticLayout"
-        val sl = ShrinkWrap.buildStaticLayout(text, 0, text.length, textPaint, canvas.clipBounds.width(), true) {
+        val sl = ShrinkWrap.buildStaticLayout(text, 0, text.length, textPaint, 0, canvas.clipBounds.width(), true) {
             it.setAlignment(Layout.Alignment.ALIGN_OPPOSITE)
         }
 
@@ -60,7 +60,7 @@ class MyDynamicLayoutView(context: Context, attrs: AttributeSet?) : View(context
         val text = "This is a ShrinkWrapped DynamicLayout"
         val dl = DynamicLayout(text, textPaint, canvas.clipBounds.width(), Layout.Alignment.ALIGN_OPPOSITE, 1.0f, 0f, true)
 
-        val swRect = ShrinkWrap.getLayoutRect(dl, true)
+        val swRect = ShrinkWrap.getLayoutRect(dl, 0f, true)
 
         //draw background behind text
         val background = Paint()

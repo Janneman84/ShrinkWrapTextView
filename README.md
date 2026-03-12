@@ -44,9 +44,9 @@ Add one or more of below's implementations to your apps' `build.gradle`:
 
 ```kotlin
 dependencies {
-	implementation("com.github.Janneman84.ShrinkWrapText:XML:0.5.3") // XML
-	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.5.3") // Compose
-	implementation("com.github.Janneman84.ShrinkWrapText:Layout:0.5.3") // Static/DynamicLayout
+	implementation("com.github.Janneman84.ShrinkWrapText:XML:0.5.4") // XML
+	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.5.4") // Compose
+	implementation("com.github.Janneman84.ShrinkWrapText:Layout:0.5.4") // Static/DynamicLayout
 }
 ```
 </details>
@@ -59,20 +59,20 @@ With shared UI, in `build.gradle` add dependency to `commonMain.dependencies` to
 
 ```kotlin
 commonMain.dependencies {
-	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.5.3")
+	implementation("com.github.Janneman84.ShrinkWrapText:Compose:0.5.4")
 }
 ```
 Or use specific targets:
 ```
-com.github.Janneman84.ShrinkWrapText:Compose-wasm-js:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-macosarm64:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-iosx64:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-macosx64:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-android:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-jvm:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-js:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-iossimulatorarm64:0.5.3
-com.github.Janneman84.ShrinkWrapText:Compose-iosarm64:0.5.3
+com.github.Janneman84.ShrinkWrapText:Compose-wasm-js:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-macosarm64:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-iosx64:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-macosx64:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-android:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-jvm:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-js:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-iossimulatorarm64:0.5.4
+com.github.Janneman84.ShrinkWrapText:Compose-iosarm64:0.5.4
 ```
 </details>
 
@@ -245,12 +245,12 @@ import import shrinkwrap.layout.*
 
 ```kotlin
 // Kotlin
-ShrinkWrap.buildStaticLayout(myText, 0, text.length, myPaint, 500, true) {
+ShrinkWrap.buildStaticLayout(myText, 0, text.length, myPaint, 0, 500, true) {
 	it.setAlignment(Layout.Alignment.ALIGN_CENTER) // chain settings here
 }
 
 // Java
-ShrinkWrap.buildStaticLayout(myText, 0, myText.length(), myPaint, 500, true, b -> b
+ShrinkWrap.buildStaticLayout(myText, 0, myText.length(), myPaint, 0, 500, true, b -> b
     .setAlignment(Layout.Alignment.ALIGN_CENTER) // chain settings here
 );
 ```
@@ -271,7 +271,7 @@ public override fun onDraw(canvas: Canvas) {
 
 	/* create myLayout somewhere */
 
-    val swRect = ShrinkWrap.getLayoutRect(myLayout, true)
+    val swRect = ShrinkWrap.getLayoutRect(myLayout, 0f, true)
 
     // draw background behind text
     val background = Paint()

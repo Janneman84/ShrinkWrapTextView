@@ -75,10 +75,11 @@ private fun getMeasureText(s: SWSettings): MeasureScope.(Measurable, Constraints
 private fun getOnTextLayout(s: SWSettings, onTextLayout: ((TextLayoutResult) -> Unit)?): (TextLayoutResult) -> Unit {
     return {
 
+        s.textWidth = it.size.width
+
         if (s.shrinkWrap && s.maxLineWidth == null && it.lineCount > 1) {
 
             val widthF = it.size.width.toFloat()
-            s.textWidth = it.size.width
             s.xOffset = null
             var maxCenterWidth = 0f
 
@@ -103,6 +104,7 @@ private fun getOnTextLayout(s: SWSettings, onTextLayout: ((TextLayoutResult) -> 
 
                 if (left < 0f || right > widthF) {
                     hasUnspecified = true
+                    break
                 }
                 else {
                     val lineStartOffset = it.getLineStart(i)
